@@ -22,11 +22,11 @@ export default function Navbar({ onSearchQuery, onSelectMovie, onOpenMyList, pro
         setMyListCount(0);
       }
     };
-    
+
     updateCount();
     window.addEventListener('storage', updateCount);
     const interval = setInterval(updateCount, 2000);
-    
+
     return () => {
       window.removeEventListener('storage', updateCount);
       clearInterval(interval);
@@ -56,7 +56,7 @@ export default function Navbar({ onSearchQuery, onSelectMovie, onOpenMyList, pro
           {APP_NAME}
         </span>
 
-        <div className="ms-auto position-relative" style={{ maxWidth: 500, width: '100%' }}>
+        <div className="ms-auto position-relative flex-grow-1 flex-md-grow-0" style={{ maxWidth: 500, width: '100%' }}>
           <div className="input-group">
             <input
               type="text"
@@ -72,17 +72,17 @@ export default function Navbar({ onSearchQuery, onSelectMovie, onOpenMyList, pro
           </div>
           {query && (
             <SearchResults
-              query={query} 
-              onSelectMovie={(movie) => { 
-                setQuery(""); 
-                onSelectMovie(movie); 
-              }} 
+              query={query}
+              onSelectMovie={(movie) => {
+                setQuery("");
+                onSelectMovie(movie);
+              }}
             />
           )}
         </div>
 
         {/* Avatar + Dropdown */}
-        <div className="ms-4 position-relative" ref={menuRef}>
+        <div className="ms-3 ms-md-4 position-relative flex-shrink-0" ref={menuRef}>
           <div
             className="bg-danger rounded-circle d-flex align-items-center justify-content-center text-white fw-bold shadow-sm"
             style={{ width: 40, height: 40, cursor: 'pointer' }}

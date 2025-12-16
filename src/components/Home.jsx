@@ -42,14 +42,14 @@ function Home({ profile }) {
           "/discover/movie?with_genres=53&sort_by=popularity.desc",
           "/trending/movie/week"
         ];
-        
+
         for (const ep of endpoints) {
           try {
             const data = await fetchTMDB(ep);
             const clean = (data.results || []).filter(m => !m.adult && m.backdrop_path);
-            if (clean.length > 0) { 
-              movies = clean; 
-              break; 
+            if (clean.length > 0) {
+              movies = clean;
+              break;
             }
           } catch (e) {
             console.error("Hero fetch error:", e);
@@ -95,7 +95,7 @@ function Home({ profile }) {
   const loadRows = useCallback(async () => {
     try {
       setLoadingRows({ trending: true, popular: true, topRated: true });
-      
+
       const [trendingData, popularData, topRatedData] = await Promise.allSettled([
         getTrending(),
         getPopular(),
@@ -130,7 +130,7 @@ function Home({ profile }) {
       loadRows();
       console.log('Refreshed content');
     }, 3600000);
-    
+
     return () => clearInterval(interval);
   }, [loadRows]);
 
@@ -148,8 +148,8 @@ function Home({ profile }) {
 
     // Set the selected movie
     if (mode === 'info-only') {
-      setSelectedMovie({ 
-        ...movie, 
+      setSelectedMovie({
+        ...movie,
         infoOnly: true,
         title: movie.title || movie.name,
         backdrop_path: movie.backdrop_path || movie.poster_path
@@ -162,7 +162,7 @@ function Home({ profile }) {
         backdrop_path: movie.backdrop_path || movie.poster_path
       });
     }
-    
+
     // Close My List modal if open
     if (showMyList) {
       setShowMyList(false);
@@ -217,10 +217,10 @@ function Home({ profile }) {
               {loadingRows.trending ? (
                 <RowSkeleton title="Trending Now" />
               ) : trending.length > 0 && (
-                <Row 
-                  title="Trending Now" 
+                <Row
+                  title="Trending Now"
                   movies={trending}
-                  onSelectMovie={handleSelectMovie} 
+                  onSelectMovie={handleSelectMovie}
                   ageGroup={profile?.ageGroup}
                   rowType="trending"
                 />
@@ -229,10 +229,10 @@ function Home({ profile }) {
               {loadingRows.popular ? (
                 <RowSkeleton title="Popular" />
               ) : popular.length > 0 && (
-                <Row 
-                  title="Popular" 
+                <Row
+                  title="Popular"
                   movies={popular}
-                  onSelectMovie={handleSelectMovie} 
+                  onSelectMovie={handleSelectMovie}
                   ageGroup={profile?.ageGroup}
                   rowType="popular"
                 />
@@ -241,10 +241,10 @@ function Home({ profile }) {
               {loadingRows.topRated ? (
                 <RowSkeleton title="Top Rated" />
               ) : topRated.length > 0 && (
-                <Row 
-                  title="Top Rated" 
+                <Row
+                  title="Top Rated"
                   movies={topRated}
-                  onSelectMovie={handleSelectMovie} 
+                  onSelectMovie={handleSelectMovie}
                   ageGroup={profile?.ageGroup}
                   rowType="topRated"
                 />
@@ -256,36 +256,36 @@ function Home({ profile }) {
 
       {/* My List Modal */}
       {showMyList && (
-        <div 
+        <div
           className="modal-bg"
           onClick={handleCloseMyList}
         >
-          <div 
-            className="modal-body" 
+          <div
+            className="modal-body"
             style={{ maxWidth: '1200px', maxHeight: '90vh', overflowY: 'auto' }}
             onClick={e => e.stopPropagation()}
           >
-            <button 
+            <button
               onClick={handleCloseMyList}
               className="close-btn"
               style={{ top: '20px', right: '20px', fontSize: '40px' }}
             >
               ×
             </button>
-            
+
             <h2 className="text-white text-center mb-5 display-4">My List</h2>
-            
+
             {myList.length === 0 ? (
               <div className="text-center py-5">
                 <i className="bi bi-heart text-white-50" style={{ fontSize: '80px' }}></i>
                 <p className="text-white-50 mt-3 fs-4">Your list is empty</p>
-                <p className="text-white-50">Add movies and shows by clicking the heart icon</p>
+
               </div>
             ) : (
               <div className="row row-cols-2 row-cols-md-4 row-cols-lg-6 g-4">
                 {myList.map(movie => (
                   <div key={movie.id} className="col">
-                    <div className="position-relative cursor-pointer" 
+                    <div className="position-relative cursor-pointer"
                       onClick={() => {
                         handleSelectMovie(movie);
                         handleCloseMyList();
@@ -295,8 +295,8 @@ function Home({ profile }) {
                         src={imageUrl(movie.poster_path || movie.backdrop_path, 'w300')}
                         alt={movie.title}
                         className="img-fluid rounded shadow hover-zoom"
-                        style={{ 
-                          height: '280px', 
+                        style={{
+                          height: '280px',
                           objectFit: 'cover',
                           width: '100%'
                         }}
@@ -316,9 +316,9 @@ function Home({ profile }) {
 
       {/* Video Modal */}
       {selectedMovie && (
-        <VideoModal 
-          movie={selectedMovie} 
-          onClose={() => setSelectedMovie(null)} 
+        <VideoModal
+          movie={selectedMovie}
+          onClose={() => setSelectedMovie(null)}
         />
       )}
     </div>

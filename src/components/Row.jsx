@@ -30,17 +30,17 @@ function Row({ title, movies, onSelectMovie, ageGroup, rowType }) {
       const isKidsTV = movie.genre_ids?.includes(10762);
       const isAnimation = movie.genre_ids?.includes(16);
       const isFamily = movie.genre_ids?.includes(10751);
-    
+
       const isKidFocused = isKidsTV || isAnimation || isFamily;
-      
+
       const isIntense = movie.genre_ids?.includes(28) || // Action
-                       movie.genre_ids?.includes(53) || // Thriller
-                       movie.genre_ids?.includes(80) || // Crime
-                       movie.genre_ids?.includes(10752); // War
+        movie.genre_ids?.includes(53) || // Thriller
+        movie.genre_ids?.includes(80) || // Crime
+        movie.genre_ids?.includes(10752); // War
 
       if (ageGroup === 'kid') {
-        return !isAdult && !isHorror && !isIntense && 
-               (isAnimation || isFamily || isKidsTV);
+        return !isAdult && !isHorror && !isIntense &&
+          (isAnimation || isFamily || isKidsTV);
       }
       else if (ageGroup === 'elder') {
         return !isAdult && !isHorror && !isAnimation && !isFamily && !isKidsTV;
@@ -61,11 +61,11 @@ function Row({ title, movies, onSelectMovie, ageGroup, rowType }) {
 
   const scroll = (direction) => {
     if (!scrollRef.current) return;
-    
+
     const cardWidth = 220;
     const gap = 10;
     const scrollAmount = (cardWidth + gap) * 5;
-    
+
     scrollRef.current.scrollBy({
       left: direction === 'left' ? -scrollAmount : scrollAmount,
       behavior: 'smooth'
@@ -75,7 +75,7 @@ function Row({ title, movies, onSelectMovie, ageGroup, rowType }) {
   const toggleHeart = (e, movie) => {
     e.stopPropagation();
     e.preventDefault();
-    
+
     if (hearts[movie.id]) {
       removeFromMyList(movie.id);
     } else {
@@ -115,7 +115,7 @@ function Row({ title, movies, onSelectMovie, ageGroup, rowType }) {
           <button
             onClick={() => scroll('left')}
             className="position-absolute start-0 top-50 translate-middle-y btn btn-dark btn-lg rounded-circle z-3 shadow arrow-btn"
-            style={{ 
+            style={{
               left: '10px',
               background: 'rgba(20, 20, 20, 0.9)',
               border: '1px solid rgba(255,255,255,0.3)',
@@ -132,7 +132,7 @@ function Row({ title, movies, onSelectMovie, ageGroup, rowType }) {
           <button
             onClick={() => scroll('right')}
             className="position-absolute end-0 top-50 translate-middle-y btn btn-dark btn-lg rounded-circle z-3 shadow arrow-btn"
-            style={{ 
+            style={{
               right: '10px',
               background: 'rgba(20, 20, 20, 0.9)',
               border: '1px solid rgba(255,255,255,0.3)',
@@ -166,8 +166,8 @@ function Row({ title, movies, onSelectMovie, ageGroup, rowType }) {
               }}
               onClick={(e) => handleCardClick(movie, e)}
               style={{
-                transform: hoveredMovie === movie.id ? 'scale(1.4) translateY(-30px)' : 'scale(1)',
-                zIndex: hoveredMovie === movie.id ? 50 : 1,
+                transform: 'scale(1)',
+                zIndex: 1,
                 transition: 'all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)'
               }}
             >
@@ -186,8 +186,8 @@ function Row({ title, movies, onSelectMovie, ageGroup, rowType }) {
               <button
                 onClick={(e) => toggleHeart(e, movie)}
                 className="position-absolute top-0 end-0 btn btn-dark rounded-circle m-2 shadow-sm heart-btn"
-                style={{ 
-                  width: '40px', 
+                style={{
+                  width: '40px',
                   height: '40px',
                   zIndex: 100,
                   background: 'rgba(0,0,0,0.8)',
@@ -198,7 +198,7 @@ function Row({ title, movies, onSelectMovie, ageGroup, rowType }) {
               </button>
 
               {/* Bottom Info Overlay */}
-              <div 
+              <div
                 className="position-absolute bottom-0 start-0 w-100 p-3"
                 style={{
                   background: 'linear-gradient(to top, rgba(0,0,0,0.9), transparent)',
@@ -211,14 +211,14 @@ function Row({ title, movies, onSelectMovie, ageGroup, rowType }) {
                       <span className="badge bg-secondary">
                         {movie.vote_average?.toFixed(1) || 'N/A'}
                       </span>
-                      
+
                       {/* Trending Badge */}
                       {movie.popularity > 1000 && (
                         <span className="badge bg-warning text-dark">
                           <i className="bi bi-fire me-1"></i> Trending
                         </span>
                       )}
-                      
+
                       {movie.adult && <span className="badge bg-danger">18+</span>}
                     </div>
                     <h6 className="text-white fw-bold mb-0 text-truncate">
@@ -228,9 +228,9 @@ function Row({ title, movies, onSelectMovie, ageGroup, rowType }) {
                       {movie.release_date?.slice(0, 4) || movie.first_air_date?.slice(0, 4) || 'N/A'}
                     </small>
                   </div>
-                  
+
                   {/* Info Button */}
-                  <button 
+                  <button
                     className="btn btn-sm btn-dark rounded-circle info-btn"
                     onClick={(e) => handleInfoClick(e, movie)}
                     style={{ width: '32px', height: '32px' }}
@@ -246,8 +246,8 @@ function Row({ title, movies, onSelectMovie, ageGroup, rowType }) {
                   <button
                     onClick={(e) => handlePlayClick(e, movie)}
                     className="btn btn-light rounded-circle shadow-lg d-flex align-items-center justify-content-center play-btn"
-                    style={{ 
-                      width: '60px', 
+                    style={{
+                      width: '60px',
                       height: '60px',
                       background: 'white'
                     }}
