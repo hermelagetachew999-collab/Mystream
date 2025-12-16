@@ -51,12 +51,12 @@ export default function Navbar({ onSearchQuery, onSelectMovie, onOpenMyList, pro
 
   return (
     <nav className="navbar bg-black position-fixed top-0 start-0 end-0 z-3" style={{ height: '68px' }}>
-      <div className="container-fluid d-flex align-items-center">
+      <div className="container-fluid d-flex align-items-center pe-0">
         <span className="navbar-brand fs-3 fw-bold" style={{ color: 'var(--accent)' }}>
           {APP_NAME}
         </span>
 
-        <div className="ms-auto position-relative flex-grow-1 flex-md-grow-0" style={{ maxWidth: 500, width: '100%' }}>
+        <div className="ms-3 position-relative flex-grow-1 flex-md-grow-0" style={{ maxWidth: 500, width: '100%' }}>
           <div className="input-group">
             <input
               type="text"
@@ -82,7 +82,7 @@ export default function Navbar({ onSearchQuery, onSelectMovie, onOpenMyList, pro
         </div>
 
         {/* Avatar + Dropdown */}
-        <div className="ms-3 ms-md-4 position-relative flex-shrink-0" ref={menuRef}>
+        <div className="ms-auto ms-md-4 position-relative flex-shrink-0" ref={menuRef}>
           <div
             className="bg-danger rounded-circle d-flex align-items-center justify-content-center text-white fw-bold shadow-sm"
             style={{ width: 40, height: 40, cursor: 'pointer' }}
