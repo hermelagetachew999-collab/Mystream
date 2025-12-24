@@ -51,7 +51,7 @@ export default function Navbar({ onSearchQuery, onSelectMovie, onOpenMyList, pro
 
   return (
     <nav className="navbar bg-black position-fixed top-0 start-0 end-0 z-3" style={{ height: 'auto', minHeight: '68px' }}>
-      <div className="container-fluid d-flex align-items-center pe-0">
+      <div className="container-fluid d-flex align-items-center pe-0 flex-nowrap">
         <span className="navbar-brand fs-3 fw-bold" style={{ color: 'var(--accent)' }}>
           {APP_NAME}
         </span>
