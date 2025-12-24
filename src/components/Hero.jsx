@@ -43,7 +43,7 @@ function Hero({ featuredMovie, onPlay, onMoreInfo }) {
             : featuredMovie?.overview}
         </p>
 
-        <div className="d-flex gap-3">
+        <div className="d-flex gap-3 flex-wrap">
 
           <button
             onClick={() => onPlay(featuredMovie)}
