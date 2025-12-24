@@ -8,13 +8,13 @@ export default function HoverPreview({ movie, position }) {
 
   useEffect(() => {
     let mounted = true;
-    
-    if (movie && position) {
+
+    if (movie && position && window.innerWidth > 768) {
       setLoading(true);
       getMovieVideos(movie.id)
         .then(data => {
           if (!mounted) return;
-          const trailer = data.results?.find(v => 
+          const trailer = data.results?.find(v =>
             v.site === "YouTube" && v.type === "Trailer"
           );
           if (trailer) setTrailerKey(trailer.key);
@@ -30,7 +30,7 @@ export default function HoverPreview({ movie, position }) {
   if (!movie || !position) return null;
 
   return (
-    <div 
+    <div
       className="position-fixed bg-dark rounded-3 shadow-lg overflow-hidden"
       style={{
         left: position.x,

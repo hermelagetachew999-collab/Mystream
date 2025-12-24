@@ -154,6 +154,7 @@ function Row({ title, movies, onSelectMovie, ageGroup, rowType }) {
               key={movie.id}
               className="netflix-card position-relative"
               onMouseEnter={(e) => {
+                if (window.innerWidth <= 768) return; // Disable hover on mobile
                 setHoveredMovie(movie.id);
                 const rect = e.target.getBoundingClientRect();
                 setPreviewPosition({ x: rect.left + rect.width / 2, y: rect.top });
