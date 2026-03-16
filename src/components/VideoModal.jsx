@@ -1,6 +1,6 @@
 // src/components/VideoModal.jsx
 import { useEffect, useState, useCallback } from "react";
-import { getMovieDetails, getMovieVideos, imageUrl } from '../api/tmdb';
+import { getMovieDetails, getMovieVideos, imageUrl, API_KEY } from '../api/tmdb';
 import { addToMyList, removeFromMyList, isInMyList } from '../myList';
 
 export default function VideoModal({ movie, onClose }) {
@@ -8,31 +8,34 @@ export default function VideoModal({ movie, onClose }) {
   if (!movie) return null;
   
   const [details, setDetails] = useState(null);
+  const [currentMovie, setCurrentMovie] = useState(movie);
   const [trailerKey, setTrailerKey] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('trailer');
   const [similarMovies, setSimilarMovies] = useState([]);
   const [isMuted, setIsMuted] = useState(false);
-  const [userRating, setUserRating] = useState(null);
+  const [userRating, setUserRating] = useState(() => {
+    return localStorage.getItem(`rating_${currentMovie?.id || movie?.id}`) || null;
+  });
   const [showSkipIntro, setShowSkipIntro] = useState(false);
   
   const isInfoOnly = movie?.infoOnly === true;
 
   // Fetch movie details and similar movies
   const fetchMovieData = useCallback(async () => {
-    if (!movie?.id) return;
+    if (!currentMovie?.id) return;
 
     setLoading(true);
     try {
-      const [movieData, similarData] = await Promise.all([
-        getMovieDetails(movie.id),
-        fetch(`https://api.themoviedb.org/3/movie/${movie.id}/similar?api_key=${process.env.REACT_APP_TMDB_KEY}&language=en-US&page=1`)
-          .then(res => res.json())
-          .catch(() => ({ results: [] }))
-      ]);
+      const movieData = await getMovieDetails(currentMovie.id);
 
       setDetails(movieData);
-      setSimilarMovies(similarData.results?.slice(0, 6) || []);
+      
+      // Use recommendations instead of similar if available, otherwise similar
+      const recs = movieData.recommendations?.results?.length > 0 
+        ? movieData.recommendations.results 
+        : [];
+      setSimilarMovies(recs.slice(0, 6));
 
       // Find trailer
       const trailer = movieData.videos?.results?.find(
@@ -49,7 +52,9 @@ export default function VideoModal({ movie, onClose }) {
 
   useEffect(() => {
     fetchMovieData();
-  }, [fetchMovieData]);
+    // Reset rating when currentMovie changes
+    setUserRating(localStorage.getItem(`rating_${currentMovie?.id}`) || null);
+  }, [fetchMovieData, currentMovie?.id]);
 
   // Handle escape key to close modal
   useEffect(() => {
@@ -87,10 +92,10 @@ export default function VideoModal({ movie, onClose }) {
 
   const toggleLike = (e) => {
     e.stopPropagation();
-    if (isInMyList(movie.id)) {
-      removeFromMyList(movie.id);
+    if (isInMyList(currentMovie.id)) {
+      removeFromMyList(currentMovie.id);
     } else {
-      addToMyList(movie);
+      addToMyList(currentMovie);
     }
     setDetails(prev => ({ ...prev }));
   };
@@ -122,23 +127,48 @@ export default function VideoModal({ movie, onClose }) {
   };
 
   const handleSimilarMovieClick = (similarMovie) => {
-    onClose();
-    window.location.reload();
+    // Instead of reload, we can just update the movie state if we had one
+    // But since movie comes from props, we should probably tell the parent or use internal state
+    // For now, let's just use internal state for the "active" movie if possible
+    // Or just reload but keep the modal open? Re-setting the movie prop is better.
+    // However, the parent (Home.jsx) manages selectedMovie.
+    // Let's just update the internal state for "currentMovie" and fetch data
+    setDetails(null);
+    setLoading(true);
+    setTrailerKey(null);
+    setCurrentMovie(similarMovie);
   };
 
-  const isLiked = isInMyList(movie.id);
+  const isLiked = isInMyList(currentMovie.id);
 
-  const title = details?.title || details?.name || movie.title || movie.name;
-  const overview = details?.overview || movie.overview || "No description available.";
+  const title = details?.title || details?.name || currentMovie.title || currentMovie.name;
+  const overview = details?.overview || currentMovie.overview || "No description available.";
   const runtime = details?.runtime;
   const genres = details?.genres || [];
-  const releaseDate = details?.release_date || movie.release_date;
-  const voteAverage = details?.vote_average || movie.vote_average;
+  const releaseDate = details?.release_date || currentMovie.release_date;
+  const voteAverage = details?.vote_average || currentMovie.vote_average;
+
+  // Extract crew
+  const director = details?.credits?.crew?.find(c => c.job === "Director")?.name;
+  const writers = details?.credits?.crew?.filter(c => ["Writer", "Screenplay", "Author"].includes(c.job))
+    ?.map(w => w.name)
+    ?.filter((v, i, a) => a.indexOf(v) === i) // unique
+    ?.slice(0, 3);
+
+  const handleShare = () => {
+    const url = window.location.href;
+    navigator.clipboard.writeText(url).then(() => {
+      const event = new CustomEvent('showToast', {
+        detail: { message: 'Link copied to clipboard!', type: 'success' }
+      });
+      window.dispatchEvent(event);
+    });
+  };
 
   const formatRuntime = (minutes) => {
     const hours = Math.floor(minutes / 60);
     const mins = minutes % 60;
-    return `${hours}h ${mins}m`;
+    return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
   };
 
   return (
@@ -245,7 +275,7 @@ export default function VideoModal({ movie, onClose }) {
                   </div>
                 ) : (
                   <img
-                    src={imageUrl(details?.backdrop_path || movie.backdrop_path || movie.poster_path, 'original')}
+                    src={imageUrl(details?.backdrop_path || currentMovie.backdrop_path || currentMovie.poster_path, 'original')}
                     alt={title}
                     className="w-100 h-100"
                     style={{ objectFit: 'cover' }}
@@ -294,16 +324,33 @@ export default function VideoModal({ movie, onClose }) {
                       </button>
                       <div className="d-flex gap-2 ms-3">
                         <button
-                          onClick={() => setUserRating('thumbsUp')}
+                          onClick={() => {
+                            const val = userRating === 'thumbsUp' ? null : 'thumbsUp';
+                            setUserRating(val);
+                            if (val) localStorage.setItem(`rating_${currentMovie.id}`, val);
+                            else localStorage.removeItem(`rating_${currentMovie.id}`);
+                          }}
                           className={`btn btn-lg ${userRating === 'thumbsUp' ? 'btn-success' : 'btn-outline-success'}`}
                         >
                           <i className="bi bi-hand-thumbs-up"></i>
                         </button>
                         <button
-                          onClick={() => setUserRating('thumbsDown')}
+                          onClick={() => {
+                            const val = userRating === 'thumbsDown' ? null : 'thumbsDown';
+                            setUserRating(val);
+                            if (val) localStorage.setItem(`rating_${currentMovie.id}`, val);
+                            else localStorage.removeItem(`rating_${currentMovie.id}`);
+                          }}
                           className={`btn btn-lg ${userRating === 'thumbsDown' ? 'btn-danger' : 'btn-outline-danger'}`}
                         >
                           <i className="bi bi-hand-thumbs-down"></i>
+                        </button>
+                        <button
+                          onClick={handleShare}
+                          className="btn btn-lg btn-outline-light ms-2"
+                          title="Share"
+                        >
+                          <i className="bi bi-share"></i>
                         </button>
                       </div>
                     </div>
@@ -323,7 +370,7 @@ export default function VideoModal({ movie, onClose }) {
                           {formatRuntime(runtime)}
                         </span>
                       )}
-                      {movie.adult && (
+                      {currentMovie.adult && (
                         <span className="badge bg-danger">18+</span>
                       )}
                     </div>
@@ -337,26 +384,80 @@ export default function VideoModal({ movie, onClose }) {
                     </div>
                   </div>
 
-                  {/* Overview */}
+                  {/* Overview or Rich Info */}
                   <div className="mb-4">
-                    <h4 className="text-white mb-2">Overview</h4>
-                    <p className="text-white lead" style={{ lineHeight: '1.6', opacity: '0.9' }}>
-                      {overview}
-                    </p>
+                    {activeTab === 'trailer' ? (
+                      <>
+                        <h4 className="text-white mb-2">Overview</h4>
+                        <p className="text-white lead" style={{ lineHeight: '1.6', opacity: '0.9' }}>
+                          {overview}
+                        </p>
+                        <div className="mt-3">
+                          {director && (
+                            <div className="text-white-50 mb-1">
+                              <span className="text-white">Director:</span> {director}
+                            </div>
+                          )}
+                          {writers?.length > 0 && (
+                            <div className="text-white-50">
+                              <span className="text-white">Writers:</span> {writers.join(', ')}
+                            </div>
+                          )}
+                        </div>
+                      </>
+                    ) : (
+                      <div className="bg-dark p-4 rounded">
+                        <h4 className="text-white mb-4">Detailed Information</h4>
+                        <div className="row">
+                          <div className="col-md-6">
+                            <p className="text-white-50 mb-2">Status: <span className="text-white">{details?.status}</span></p>
+                            <p className="text-white-50 mb-2">Original Language: <span className="text-white">{details?.original_language?.toUpperCase()}</span></p>
+                            <p className="text-white-50 mb-2">Budget: <span className="text-white">{details?.budget > 0 ? `$${details.budget.toLocaleString()}` : 'N/A'}</span></p>
+                          </div>
+                          <div className="col-md-6">
+                            <p className="text-white-50 mb-2">Revenue: <span className="text-white">{details?.revenue > 0 ? `$${details.revenue.toLocaleString()}` : 'N/A'}</span></p>
+                            <p className="text-white-50 mb-2">Popularity: <span className="text-white">{details?.popularity?.toFixed(0)}</span></p>
+                            <p className="text-white-50 mb-2">Tagline: <span className="text-white">"{details?.tagline || 'N/A'}"</span></p>
+                          </div>
+                        </div>
+                        {details?.production_companies?.length > 0 && (
+                           <div className="mt-3">
+                             <p className="text-white-50 mb-1">Production Companies:</p>
+                             <div className="d-flex flex-wrap gap-2 mt-2">
+                               {details.production_companies.slice(0, 4).map(pc => (
+                                 <span key={pc.id} className="badge bg-secondary">{pc.name}</span>
+                               ))}
+                             </div>
+                           </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
 
                 <div className="col-lg-4">
                   {/* Cast */}
-                  {details?.credits?.cast?.slice(0, 5).length > 0 && (
+                  {details?.credits?.cast?.slice(0, 8).length > 0 && (
                     <div className="mb-4">
-                      <h5 className="text-white mb-2">Cast</h5>
-                      <div className="d-flex flex-wrap gap-2">
-                        {details.credits.cast.slice(0, 5).map(person => (
+                      <h5 className="text-white mb-3">Cast</h5>
+                      <div className="d-flex flex-wrap gap-3">
+                        {details.credits.cast.slice(0, 8).map(person => (
                           <div key={person.id} className="text-center" style={{ width: '80px' }}>
-                            <div className="bg-secondary rounded-circle mb-2 mx-auto" style={{ width: '60px', height: '60px' }}></div>
-                            <small className="text-white d-block text-truncate">{person.name}</small>
-                            <small className="text-white-50 d-block text-truncate" style={{ fontSize: '0.7rem' }}>
+                            <div className="mb-2 mx-auto" style={{ width: '65px', height: '65px' }}>
+                               {person.profile_path ? (
+                                 <img 
+                                   src={imageUrl(person.profile_path, 'w200')} 
+                                   alt={person.name}
+                                   className="rounded-circle w-100 h-100 object-fit-cover shadow-sm border border-secondary"
+                                 />
+                               ) : (
+                                 <div className="bg-secondary rounded-circle w-100 h-100 d-flex align-items-center justify-content-center">
+                                   <i className="bi bi-person-fill text-dark fs-3"></i>
+                                 </div>
+                               )}
+                            </div>
+                            <small className="text-white d-block text-truncate fw-bold">{person.name}</small>
+                            <small className="text-white-50 d-block text-truncate" style={{ fontSize: '0.65rem' }}>
                               {person.character}
                             </small>
                           </div>

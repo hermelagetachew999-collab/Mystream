@@ -1,5 +1,5 @@
 // src/api/tmdb.js
-const API_KEY = process.env.REACT_APP_TMDB_KEY;
+export const API_KEY = import.meta.env?.VITE_TMDB_KEY || process?.env?.REACT_APP_TMDB_KEY || "";
 const BASE_URL = "https://api.themoviedb.org/3";
 const getCurrentAgeGroup = () => {
   try {
@@ -11,7 +11,10 @@ const getCurrentAgeGroup = () => {
 };
 // Generic fetch helper
 export const fetchTMDB = async (endpoint) => {
-  if (!API_KEY) throw new Error("TMDB API key is missing!");
+  if (!API_KEY) {
+    console.error("TMDB API key is missing! Check your .env file.");
+    return { results: [] };
+  }
   
   // Check if endpoint already has query params
   const url = endpoint.includes("?")
@@ -63,7 +66,7 @@ export async function searchMovies(query) {
 
 // Movie details
 export const getMovieDetails = (id) =>
-  fetchTMDB(`/movie/${id}?append_to_response=videos`);
+  fetchTMDB(`/movie/${id}?append_to_response=videos,credits,recommendations`);
 export const getMovieVideos = (id) => fetchTMDB(`/movie/${id}/videos`);
 
 // Image URL helper
