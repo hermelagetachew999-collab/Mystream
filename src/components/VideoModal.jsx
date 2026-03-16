@@ -1,6 +1,6 @@
 // src/components/VideoModal.jsx
 import { useEffect, useState, useCallback } from "react";
-import { getMovieDetails, getMovieVideos, imageUrl, API_KEY } from '../api/tmdb';
+import { getMovieDetails, imageUrl, API_KEY } from '../api/tmdb';
 import { addToMyList, removeFromMyList, isInMyList } from '../myList';
 
 export default function VideoModal({ movie, onClose }) {

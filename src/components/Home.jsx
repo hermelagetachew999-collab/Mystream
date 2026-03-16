@@ -1,13 +1,11 @@
 // src/components/Home.jsx
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Navbar from './Navbar.jsx';
 import Hero from './Hero.jsx';
 import Row from './Row.jsx';
 import VideoModal from './VideoModal.jsx';
 import SearchResults from './SearchResults.jsx';
-import { getTrending, getPopular, getTopRated, fetchTMDB } from '../api/tmdb';
-import { getMyList } from '../myList';
-import { imageUrl } from '../api/tmdb';
+import { getTrending, getPopular, getTopRated, fetchTMDB, imageUrl } from '../api/tmdb';
 
 function Home({ profile }) {
   const [searchQuery, setSearchQuery] = useState('');

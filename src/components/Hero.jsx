@@ -1,6 +1,6 @@
 // src/components/Hero.jsx
 import { imageUrl } from '../api/tmdb';
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 function Hero({ featuredMovie, onPlay, onMoreInfo }) {
   const bgUrl = imageUrl(featuredMovie?.backdrop_path || featuredMovie?.poster_path, 'original');
   useEffect(() => {

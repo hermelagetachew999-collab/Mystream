@@ -1,5 +1,5 @@
 // src/components/SearchResults.jsx
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { searchMovies, imageUrl } from '../api/tmdb';
 
 const getCurrentAgeGroup = () => {

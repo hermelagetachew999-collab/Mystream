@@ -1,5 +1,5 @@
 // src/components/ProfileGate.jsx
-import React, { useState } from "react";
+import { useState } from "react";
 
 const steps = ["age", "name"];
 

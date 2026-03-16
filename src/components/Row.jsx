@@ -7,8 +7,6 @@ function Row({ title, movies, onSelectMovie, ageGroup, rowType }) {
   const [hearts, setHearts] = useState({});
   const [hoveredMovie, setHoveredMovie] = useState(null);
   const scrollRef = useRef(null);
-  const [previewMovie, setPreviewMovie] = useState(null);
-  const [previewPosition, setPreviewPosition] = useState(null);
 
   // Filter movies by age group
   const filteredMovies = (() => {
@@ -153,17 +151,12 @@ function Row({ title, movies, onSelectMovie, ageGroup, rowType }) {
             <div
               key={movie.id}
               className="netflix-card position-relative"
-              onMouseEnter={(e) => {
+              onMouseEnter={() => {
                 if (window.innerWidth <= 768) return; // Disable hover on mobile
                 setHoveredMovie(movie.id);
-                const rect = e.target.getBoundingClientRect();
-                setPreviewPosition({ x: rect.left + rect.width / 2, y: rect.top });
-                setPreviewMovie(movie);
               }}
               onMouseLeave={() => {
                 setHoveredMovie(null);
-                setPreviewMovie(null);
-                setPreviewPosition(null);
               }}
               onClick={(e) => handleCardClick(movie, e)}
               style={{

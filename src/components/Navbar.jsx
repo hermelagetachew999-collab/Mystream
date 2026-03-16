@@ -1,5 +1,5 @@
 // src/components/Navbar.jsx
-import React, { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import SearchResults from "./SearchResults.jsx";
 import { APP_NAME } from "../config";
 
