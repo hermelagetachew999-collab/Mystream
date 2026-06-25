@@ -260,8 +260,8 @@ iframe {
     min-height: 80vh !important; /* Reduce from 150vh */
     background-position: center top !important;
   }
-  .hero-bg h1 {
-    font-size: 2.5rem !important; /* Smaller title */
+  .hero-title {
+    font-size: 2rem !important; /* Smaller title on mobile */
   }
   .hero-bg p {
     font-size: 1rem !important;
@@ -270,6 +270,11 @@ iframe {
   .hero-bg .btn {
     padding: 0.5rem 1.5rem !important;
     font-size: 1rem !important;
+    width: 100% !important; /* Full width buttons on mobile */
+    margin-bottom: 0.5rem !important;
+  }
+  .hero-bg .btn:first-child {
+    margin-top: 0 !important;
   }
 
   /* Row Adjustments */
@@ -311,5 +316,30 @@ iframe {
     top: 10px;
     right: 10px;
     font-size: 30px;
+  }
+
+  /* VideoModal specific mobile adjustments */
+  .modal-body video {
+    max-height: 40vh !important;
+  }
+  .modal-body iframe {
+    max-height: 40vh !important;
+  }
+
+  /* Adjust button sizes on mobile */
+  .modal-body .btn {
+    padding: 0.5rem 1rem !important;
+    font-size: 0.9rem !important;
+  }
+
+  /* Adjust cast images on mobile */
+  .modal-body .col-lg-4 img {
+    width: 50px !important;
+    height: 50px !important;
+  }
+
+  /* Adjust similar movies grid on mobile */
+  .modal-body .row-cols-3 {
+    --bs-columns: 2 !important;
   }
 }

@@ -56,7 +56,17 @@ export default function Navbar({ onSearchQuery, onSelectMovie, onOpenMyList, pro
           {APP_NAME}
         </span>
 
-        <div className="ms-3 position-relative flex-grow-1" style={{ maxWidth: '100%' }}>
+        {/* Hamburger Menu Button - Mobile Only */}
+        <button
+          className="btn btn-dark d-md-none ms-auto"
+          onClick={() => setShowMenu(s => !s)}
+          style={{ border: 'none', padding: '8px 12px' }}
+        >
+          <i className={`bi ${showMenu ? 'bi-x-lg' : 'bi-list'} fs-3`}></i>
+        </button>
+
+        {/* Desktop Search - Hidden on Mobile */}
+        <div className="ms-3 position-relative flex-grow-1 d-none d-md-block" style={{ maxWidth: '100%' }}>
           <div className="input-group">
             <input
               type="text"
@@ -81,8 +91,8 @@ export default function Navbar({ onSearchQuery, onSelectMovie, onOpenMyList, pro
           )}
         </div>
 
-        {/* Avatar + Dropdown */}
-        <div className="ms-auto ms-md-4 position-relative flex-shrink-0" ref={menuRef}>
+        {/* Avatar + Dropdown - Desktop */}
+        <div className="ms-auto ms-md-4 position-relative flex-shrink-0 d-none d-md-block" ref={menuRef}>
           <div
             className="bg-danger rounded-circle d-flex align-items-center justify-content-center text-white fw-bold shadow-sm"
             style={{ width: 40, height: 40, cursor: 'pointer' }}
@@ -156,6 +166,95 @@ export default function Navbar({ onSearchQuery, onSelectMovie, onOpenMyList, pro
           )}
         </div>
       </div>
+
+      {/* Mobile Menu Overlay */}
+      {showMenu && (
+        <div
+          className="d-md-none position-fixed top-0 start-0 w-100 bg-dark"
+          style={{
+            top: '68px',
+            zIndex: 99998,
+            padding: '20px',
+            minHeight: 'calc(100vh - 68px)'
+          }}
+          ref={menuRef}
+        >
+          {/* Mobile Search */}
+          <div className="mb-4">
+            <div className="input-group">
+              <input
+                type="text"
+                className="form-control bg-white text-black border-0 rounded-start"
+                placeholder="Search..."
+                value={query}
+                onChange={handleSearch}
+                style={{ outline: 'none', height: '40px' }}
+              />
+              <button className="btn bg-black text-white border-0 rounded-end px-3">
+                <i className="bi bi-search"></i>
+              </button>
+            </div>
+            {query && (
+              <SearchResults
+                query={query}
+                onSelectMovie={(movie) => {
+                  setQuery("");
+                  onSelectMovie(movie);
+                  setShowMenu(false);
+                }}
+              />
+            )}
+          </div>
+
+          <div className="d-flex align-items-center gap-3 mb-4">
+            <div className="bg-danger rounded-circle" style={{ width: 50, height: 50 }}></div>
+            <div>
+              <div className="fw-bold fs-5">{profile?.name || "User"}</div>
+              <small className="text-white-50">{profile?.ageGroup || "adult"}</small>
+            </div>
+          </div>
+
+          <hr className="border-secondary opacity-25 my-3" />
+
+          <div
+            className="py-3 px-3 rounded hover-bg-gray d-flex justify-content-between align-items-center"
+            style={{ cursor: 'pointer' }}
+            onClick={() => {
+              onOpenMyList();
+              setShowMenu(false);
+            }}
+          >
+            <span className="fs-5">My List</span>
+            {myListCount > 0 && (
+              <span className="badge bg-netflix">{myListCount}</span>
+            )}
+          </div>
+
+          <div
+            className="py-3 px-3 rounded hover-bg-gray"
+            style={{ cursor: 'pointer' }}
+            onClick={() => {
+              setShowNotifications(true);
+              setShowMenu(false);
+            }}
+          >
+            <span className="fs-5">Notifications</span>
+          </div>
+
+          <hr className="border-secondary opacity-25 my-3" />
+
+          <div
+            className="py-3 px-3 rounded hover-bg-gray text-danger"
+            style={{ cursor: 'pointer' }}
+            onClick={() => {
+              localStorage.removeItem("netflix_profile");
+              window.location.reload();
+            }}
+          >
+            <span className="fs-5">Sign out</span>
+          </div>
+        </div>
+      )}
     </nav>
   );
 }
