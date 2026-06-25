@@ -6,6 +6,7 @@ import Row from './Row.jsx';
 import VideoModal from './VideoModal.jsx';
 import SearchResults from './SearchResults.jsx';
 import { getTrending, getPopular, getTopRated, fetchTMDB, imageUrl } from '../api/tmdb';
+import { getMyList } from '../myList';
 
 function Home({ profile }) {
   const [searchQuery, setSearchQuery] = useState('');
