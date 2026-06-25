@@ -167,13 +167,19 @@ function Row({ title, movies, onSelectMovie, ageGroup, rowType }) {
             >
               {/* Poster Image */}
               <img
-                src={imageUrl(movie.poster_path || movie.backdrop_path, 'w300')}
+                src={movie.poster_path || imageUrl(movie.poster_path || movie.backdrop_path, 'w300')}
                 alt={movie.title || movie.name}
                 className="w-100 h-100 object-fit-cover"
                 style={{
                   transition: 'opacity 0.4s ease'
                 }}
                 loading="lazy"
+                onError={(e) => {
+                  // Fallback for archive movies without poster
+                  if (movie.isArchive) {
+                    e.target.src = 'https://via.placeholder.com/300x450/141414/ffffff?text=No+Poster';
+                  }
+                }}
               />
 
               {/* Heart Button */}

@@ -7,6 +7,7 @@ import VideoModal from './VideoModal.jsx';
 import SearchResults from './SearchResults.jsx';
 import { getTrending, getPopular, getTopRated, fetchTMDB, imageUrl } from '../api/tmdb';
 import { getMyList } from '../myList';
+import { getFeaturedArchiveMovies } from '../api/archive';
 
 function Home({ profile }) {
   const [searchQuery, setSearchQuery] = useState('');
@@ -18,10 +19,12 @@ function Home({ profile }) {
   const [trending, setTrending] = useState([]);
   const [popular, setPopular] = useState([]);
   const [topRated, setTopRated] = useState([]);
+  const [archiveMovies, setArchiveMovies] = useState([]);
   const [loadingRows, setLoadingRows] = useState({
     trending: true,
     popular: true,
-    topRated: true
+    topRated: true,
+    archive: true
   });
 
   // Load My List
@@ -93,12 +96,13 @@ function Home({ profile }) {
   // Load all rows
   const loadRows = useCallback(async () => {
     try {
-      setLoadingRows({ trending: true, popular: true, topRated: true });
+      setLoadingRows({ trending: true, popular: true, topRated: true, archive: true });
 
-      const [trendingData, popularData, topRatedData] = await Promise.allSettled([
+      const [trendingData, popularData, topRatedData, archiveData] = await Promise.allSettled([
         getTrending(),
         getPopular(),
-        getTopRated()
+        getTopRated(),
+        getFeaturedArchiveMovies()
       ]);
 
       if (trendingData.status === 'fulfilled') {
@@ -110,10 +114,13 @@ function Home({ profile }) {
       if (topRatedData.status === 'fulfilled') {
         setTopRated(topRatedData.value.results || []);
       }
+      if (archiveData.status === 'fulfilled') {
+        setArchiveMovies(archiveData.value || []);
+      }
     } catch (error) {
       console.error("Failed to load rows:", error);
     } finally {
-      setLoadingRows({ trending: false, popular: false, topRated: false });
+      setLoadingRows({ trending: false, popular: false, topRated: false, archive: false });
     }
   }, []);
 
@@ -246,6 +253,18 @@ function Home({ profile }) {
                   onSelectMovie={handleSelectMovie}
                   ageGroup={profile?.ageGroup}
                   rowType="topRated"
+                />
+              )}
+
+              {loadingRows.archive ? (
+                <RowSkeleton title="Free Full Movies" />
+              ) : archiveMovies.length > 0 && (
+                <Row
+                  title="Free Full Movies"
+                  movies={archiveMovies}
+                  onSelectMovie={handleSelectMovie}
+                  ageGroup={profile?.ageGroup}
+                  rowType="archive"
                 />
               )}
             </>

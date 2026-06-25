@@ -2,6 +2,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { getMovieDetails, imageUrl, API_KEY } from '../api/tmdb';
 import { addToMyList, removeFromMyList, isInMyList } from '../myList';
+import { getArchiveMovieDetails } from '../api/archive';
 
 export default function VideoModal({ movie, onClose }) {
   console.log('VideoModal opened with movie:', movie);
@@ -10,6 +11,7 @@ export default function VideoModal({ movie, onClose }) {
   const [details, setDetails] = useState(null);
   const [currentMovie, setCurrentMovie] = useState(movie);
   const [trailerKey, setTrailerKey] = useState(null);
+  const [archiveVideoUrl, setArchiveVideoUrl] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('trailer');
   const [similarMovies, setSimilarMovies] = useState([]);
@@ -27,22 +29,39 @@ export default function VideoModal({ movie, onClose }) {
 
     setLoading(true);
     try {
-      const movieData = await getMovieDetails(currentMovie.id);
+      // Check if this is an Internet Archive movie
+      if (currentMovie.isArchive) {
+        const archiveData = await getArchiveMovieDetails(currentMovie.id);
+        if (archiveData) {
+          setDetails({
+            title: archiveData.title,
+            overview: archiveData.description,
+            release_date: archiveData.year,
+            poster_path: archiveData.posterUrl,
+            backdrop_path: archiveData.posterUrl
+          });
+          setArchiveVideoUrl(archiveData.videoUrl);
+          setTrailerKey(null);
+        }
+      } else {
+        // TMDB movie
+        const movieData = await getMovieDetails(currentMovie.id);
 
-      setDetails(movieData);
-      
-      // Use recommendations instead of similar if available, otherwise similar
-      const recs = movieData.recommendations?.results?.length > 0 
-        ? movieData.recommendations.results 
-        : [];
-      setSimilarMovies(recs.slice(0, 6));
+        setDetails(movieData);
+        
+        // Use recommendations instead of similar if available, otherwise similar
+        const recs = movieData.recommendations?.results?.length > 0 
+          ? movieData.recommendations.results 
+          : [];
+        setSimilarMovies(recs.slice(0, 6));
 
-      // Find trailer
-      const trailer = movieData.videos?.results?.find(
-        v => v.site === "YouTube" && v.type === "Trailer"
-      ) || movieData.videos?.results?.find(v => v.site === "YouTube");
+        // Find trailer
+        const trailer = movieData.videos?.results?.find(
+          v => v.site === "YouTube" && v.type === "Trailer"
+        ) || movieData.videos?.results?.find(v => v.site === "YouTube");
 
-      setTrailerKey(trailer?.key || null);
+        setTrailerKey(trailer?.key || null);
+      }
     } catch (error) {
       console.error("Failed to load movie details:", error);
     } finally {
@@ -136,6 +155,7 @@ export default function VideoModal({ movie, onClose }) {
     setDetails(null);
     setLoading(true);
     setTrailerKey(null);
+    setArchiveVideoUrl(null);
     setCurrentMovie(similarMovie);
   };
 
@@ -243,7 +263,17 @@ export default function VideoModal({ movie, onClose }) {
                  border: 'none',
                  display: 'block'
               }}>
-                {trailerKey && activeTab === 'trailer' ? (
+                {archiveVideoUrl && activeTab === 'trailer' ? (
+                  <div style={{ position: 'relative', width: '100%', height: '100%', margin: '0', padding: '0' }}>
+                    <video
+                      src={archiveVideoUrl}
+                      controls
+                      autoPlay={!isInfoOnly}
+                      className="w-100 h-100"
+                      style={{ backgroundColor: '#000', objectFit: 'contain' }}
+                    />
+                  </div>
+                ) : trailerKey && activeTab === 'trailer' ? (
                   <div style={{ position: 'relative', width: '100%', height: '100%', margin: '0', padding: '0' }}>
                     <iframe
                       src={`https://www.youtube.com/embed/${trailerKey}?autoplay=${isInfoOnly ? '0' : '1'}&controls=1&rel=0&modestbranding=1&fs=1&mute=${isMuted ? '1' : '0'}`}
@@ -275,7 +305,7 @@ export default function VideoModal({ movie, onClose }) {
                   </div>
                 ) : (
                   <img
-                    src={imageUrl(details?.backdrop_path || currentMovie.backdrop_path || currentMovie.poster_path, 'original')}
+                    src={details?.poster_path || imageUrl(details?.backdrop_path || currentMovie.backdrop_path || currentMovie.poster_path, 'original')}
                     alt={title}
                     className="w-100 h-100"
                     style={{ objectFit: 'cover' }}
@@ -288,9 +318,9 @@ export default function VideoModal({ movie, onClose }) {
                 <button
                   className={`btn ${activeTab === 'trailer' ? 'btn-netflix' : 'btn-dark'} rounded-0 py-2 flex-grow-1`}
                   onClick={() => setActiveTab('trailer')}
-                  disabled={!trailerKey}
+                  disabled={!trailerKey && !archiveVideoUrl}
                 >
-                  <i className="bi bi-play-circle me-2"></i> {trailerKey ? 'Trailer' : 'No Trailer'}
+                  <i className="bi bi-play-circle me-2"></i> {archiveVideoUrl ? 'Full Movie' : (trailerKey ? 'Trailer' : 'No Video')}
                 </button>
                 <button
                   className={`btn ${activeTab === 'info' ? 'btn-netflix' : 'btn-dark'} rounded-0 py-2 flex-grow-1`}
